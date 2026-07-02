@@ -29,6 +29,7 @@ import { useConfig } from '@salesforce/storefront-next-runtime/config';
 import { DynamicImage } from '@/components/dynamic-image';
 import { preloadDynamicImage } from '@/components/dynamic-image/preload';
 import ImageNavArrows from '@/components/image-nav-arrows';
+import ProductImageZoom from '@/components/product-image-zoom';
 import { useTranslation } from 'react-i18next';
 import { useDeferredRenderSequence } from '@/hooks/use-deferred-render';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,8 @@ interface ImageGalleryProps {
      * container so DIS doesn't deliver oversized variants.
      */
     widths?: ImageGalleryWidths;
+    /** Enable hover/pinch/keyboard zoom on the main image (PDP) */
+    enableImageZoom?: boolean;
 }
 
 type NetworkInformation = {
@@ -142,6 +145,7 @@ export default function ImageGallery({
     horizontalThumbnails = false,
     productName,
     widths,
+    enableImageZoom = false,
 }: ImageGalleryProps): ReactElement {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const thumbStripRef = useRef<HTMLDivElement>(null);
@@ -242,14 +246,24 @@ export default function ImageGallery({
             <div className="space-y-4">
                 {/* Main Image */}
                 <div className="relative aspect-square overflow-hidden rounded-none bg-muted">
-                    <DynamicImage
-                        src={selectedImage.src}
-                        alt={selectedImage.alt || imageAltFallback}
-                        widths={mainWidths}
-                        className="w-full h-full object-cover object-center [&_img]:object-contain! [&_img]:h-full! [&_img]:max-w-full! [&_img]:mx-auto!"
-                        loading={eager ? 'eager' : 'lazy'}
-                        priority={eager ? 'high' : undefined}
-                    />
+                    {enableImageZoom ? (
+                        <ProductImageZoom
+                            images={images}
+                            selectedImageIndex={selectedImageIndex}
+                            altFallback={imageAltFallback}
+                            widths={mainWidths}
+                            eager={eager}
+                        />
+                    ) : (
+                        <DynamicImage
+                            src={selectedImage.src}
+                            alt={selectedImage.alt || imageAltFallback}
+                            widths={mainWidths}
+                            className="w-full h-full object-cover object-center [&_img]:object-contain! [&_img]:h-full! [&_img]:max-w-full! [&_img]:mx-auto!"
+                            loading={eager ? 'eager' : 'lazy'}
+                            priority={eager ? 'high' : undefined}
+                        />
+                    )}
                     {showNavigationArrows && images.length > 1 && (
                         <ImageNavArrows
                             imageCount={images.length}

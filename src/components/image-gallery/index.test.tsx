@@ -420,3 +420,17 @@ describe('ImageGallery - off-screen preload widths', () => {
         expect(previewedSrcSets).not.toMatch(/\bsw=680\b/);
     });
 });
+
+describe('ImageGallery - image zoom', () => {
+    it('does not render the zoom layer by default', () => {
+        render(<ImageGallery images={mockImages} />, { wrapper });
+
+        expect(screen.queryByRole('button', { name: /press enter or space to zoom/i })).not.toBeInTheDocument();
+    });
+
+    it('renders the zoom layer when enableImageZoom is true', () => {
+        render(<ImageGallery images={mockImages} enableImageZoom />, { wrapper });
+
+        expect(screen.getByRole('button', { name: /press enter or space to zoom/i })).toBeInTheDocument();
+    });
+});

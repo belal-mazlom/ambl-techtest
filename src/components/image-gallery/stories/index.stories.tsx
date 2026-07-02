@@ -44,6 +44,7 @@ type SyntheticArgs = {
     navigationArrowSize: 'sm' | 'lg';
     horizontalThumbnails: boolean;
     productName: string;
+    enableImageZoom: boolean;
 };
 
 const meta: Meta<ComponentType<SyntheticArgs>> = {
@@ -79,6 +80,10 @@ const meta: Meta<ComponentType<SyntheticArgs>> = {
         productName: {
             control: 'text',
             description: 'Fallback alt text used when an image has no alt of its own',
+        },
+        enableImageZoom: {
+            control: 'boolean',
+            description: 'Enable hover, pinch, and keyboard zoom on the main image (PDP)',
         },
     },
     decorators: [
@@ -172,5 +177,44 @@ export const Empty: Story = {
             },
             { timeout: 5000 }
         );
+    },
+};
+
+/**
+ * PDP image zoom — hover on desktop, pinch on touch, Enter/Space for fixed zoom, Escape to exit.
+ */
+export const WithImageZoom: Story = {
+    args: {
+        imageCount: 4,
+        eager: true,
+        showNavigationArrows: true,
+        navigationArrowSize: 'lg',
+        horizontalThumbnails: false,
+        productName: 'Zoom demo product',
+        enableImageZoom: true,
+    },
+    render: ({
+        imageCount,
+        eager,
+        showNavigationArrows,
+        navigationArrowSize,
+        horizontalThumbnails,
+        productName,
+        enableImageZoom,
+    }) => (
+        <ImageGallery
+            images={buildImages(imageCount)}
+            eager={eager}
+            showNavigationArrows={showNavigationArrows}
+            navigationArrowSize={navigationArrowSize}
+            horizontalThumbnails={horizontalThumbnails}
+            productName={productName || undefined}
+            enableImageZoom={enableImageZoom}
+        />
+    ),
+    play: async ({ canvasElement }) => {
+        await waitForStorybookReady(canvasElement);
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('button', { name: /press enter or space to zoom/i })).toBeInTheDocument();
     },
 };

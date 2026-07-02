@@ -71,6 +71,7 @@ export default function ProductView({ product }: ProductViewProps): ReactElement
                         showNavigationArrows
                         navigationArrowSize="lg"
                         productName={product.name}
+                        enableImageZoom
                     />
                     <UITarget targetId="sfcc.pdp.agent.productHelper" />
                     {product.longDescription && product.longDescription !== product.shortDescription && (

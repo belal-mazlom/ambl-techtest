@@ -67,5 +67,8 @@ export default defineConfig(({ mode }) => {
             bundleVisualizer(),
             hybridProxy({ mode, env }),
         ],
+        server: {
+            allowedHosts: ['localhost', '127.0.0.1', '0.0.0.0', '.ngrok-free.app'],
+        },
     };
 });

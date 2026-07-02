@@ -6,11 +6,11 @@ packages:
 # To allow a new package, add it here and run: pnpm install
 # (https://pnpm.io/settings#onlybuiltdependencies)
 onlyBuiltDependencies:
-  - '@swc/core'    # Platform-specific native binding (Rust JS compiler)
-  - esbuild        # Platform-specific binary download (build tooling)
-  - msw            # Copies mockServiceWorker.js into project (test mocking)
-  - protobufjs     # Compiles .proto definitions (gRPC/Google libs)
-  - unrs-resolver  # Native module setup (eslint-import-resolver)
+  - '@swc/core' # Platform-specific native binding (Rust JS compiler)
+  - esbuild # Platform-specific binary download (build tooling)
+  - msw # Copies mockServiceWorker.js into project (test mocking)
+  - protobufjs # Compiles .proto definitions (gRPC/Google libs)
+  - unrs-resolver # Native module setup (eslint-import-resolver)
 
 # Refuse npm packages published less than 48 hours ago.
 # Bypass: pnpm install --config.minimumReleaseAge=0
@@ -34,6 +34,18 @@ trustPolicy: no-downgrade
 # Review periodically — remove entries once the maintainer restores provenance.
 # (https://pnpm.io/settings#trustpolicyexclude)
 trustPolicyExclude:
-  - 'chokidar@4.0.3'          # Lost SLSA provenance in 4.0.2+; dep of @react-router/dev
-  - 'semver@6.3.1 || 5.7.2'   # Lost provenance; dep of eslint-plugin-import, lighthouse
-  - 'tinyexec@1.2.2'          # Lost trusted publisher in 1.2.0+; dep of vitest
+  - 'chokidar@4.0.3' # Lost SLSA provenance in 4.0.2+; dep of @react-router/dev
+  - 'semver@6.3.1 || 5.7.2' # Lost provenance; dep of eslint-plugin-import, lighthouse
+  - 'tinyexec@1.2.2' # Lost trusted publisher in 1.2.0+; dep of vitest
+
+allowBuilds:
+  '@swc/core': false
+  '@tailwindcss/oxide': false
+  core-js: false
+  detox: false
+  dtrace-provider: false
+  esbuild: false
+  msw: false
+  protobufjs: false
+  unrs-resolver: false
+  yarn: false
