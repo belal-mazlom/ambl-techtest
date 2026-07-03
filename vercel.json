@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+        {
+            "source": "/mobify/bundle/:bundle/client/:path*",
+            "destination": "/:path*"
+        }
+    ]
+}
