@@ -66,7 +66,6 @@ const meta: Meta<typeof ProductTile> = {
         handleProductClick: { table: { disable: true } },
         selectedVariantColorValue: { table: { disable: true } },
         imgAspectRatio: { table: { disable: true } },
-        showNavigationArrows: { table: { disable: true } },
         regionId: { table: { disable: true } },
         component: { table: { disable: true } },
         componentData: { table: { disable: true } },

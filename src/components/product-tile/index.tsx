@@ -253,8 +253,6 @@ export interface ProductTileProps extends ComponentProps<'div'> {
     quickAddLabel?: string;
     /** Top-level navigation category name shown below swatches (e.g. "Men", "Women") */
     topCategoryName?: string;
-    /** Accepted for API compatibility; has no effect */
-    showNavigationArrows?: boolean;
 
     // Page Designer styling props
     objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
@@ -287,7 +285,6 @@ const ProductTile = forwardRef<HTMLDivElement, ProductTileProps>(
             showPickupAvailable = false,
             quickAddLabel,
             topCategoryName,
-            showNavigationArrows: _showNavigationArrows,
             // Page Designer styling props
             objectFit,
             borderRadius,
@@ -427,15 +424,6 @@ const ProductTile = forwardRef<HTMLDivElement, ProductTileProps>(
                             handleProductClick={handleProductClick}
                         />
                         <UITarget targetId="sfcc.plp.shipping.deliveryEstimate" />
-
-                        {/* Clickable product link overlay */}
-                        <Link
-                            to={productUrl}
-                            className="absolute inset-0 z-[1] cursor-pointer"
-                            aria-label={`View ${productName}`}
-                            onClick={handleClick}
-                            tabIndex={-1}
-                        />
 
                         {/* Badges — top-left */}
                         {productData?.badges.hasBadges && (

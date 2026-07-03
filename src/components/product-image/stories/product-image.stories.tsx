@@ -107,19 +107,17 @@ export const MissingImages: Story = {
     },
 };
 
-export const WithNavigationArrows: Story = {
+export const WithImageCycler: Story = {
     args: {
         product: mockMasterProductHitWithMultipleVariants,
         selectedColorValue: 'JJ5QZXX',
-        showNavigationArrows: true,
     },
     play: async ({ canvasElement }) => {
         await waitForStorybookReady(canvasElement);
         const canvas = within(canvasElement);
         const image = canvas.getByRole('img');
         await expect(image).toBeInTheDocument();
-        // Navigation arrows render (visible on hover via CSS)
-        const arrows = canvasElement.querySelectorAll('button');
-        await expect(arrows.length).toBeGreaterThan(0);
+        const dots = canvasElement.querySelector('[aria-hidden="true"]');
+        await expect(dots).not.toBeNull();
     },
 };
