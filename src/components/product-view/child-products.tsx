@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import ProductQuantityPicker from '@/components/product-quantity-picker';
+import StickyAddToCartBar from '@/components/sticky-add-to-cart-bar';
 import { Button } from '@/components/ui/button';
 import { useProductSetsBundles } from '@/hooks/product/use-product-sets-bundles';
 import { useProductActions } from '@/hooks/product/use-product-actions';
 import type { ShopperProducts } from '@/scapi';
-import { type ReactElement } from 'react';
+import { type ReactElement, useRef } from 'react';
 import { isProductSet, isProductBundle } from '@/lib/product/product-utils';
 import ChildProductCard from './child-product-card';
 // @sfdc-extension-block-start SFDC_EXT_BOPIS
@@ -137,6 +138,7 @@ export default function ChildProducts({
     selectionSource = 'url',
 }: ChildProductsProps): ReactElement | null {
     const { t } = useTranslation('product');
+    const atcAnchorRef = useRef<HTMLDivElement>(null);
     const isProductASet = isProductSet(parentProduct);
     const isProductABundle = isProductBundle(parentProduct);
 
@@ -230,12 +232,18 @@ export default function ChildProducts({
     // Allow add to cart if at least one delivery method is available
     // User can switch delivery options in the UI if their current selection is out of stock
     const canAddToCart = areAllChildProductsSelected && !hasUnorderableChildProducts && !isCompletelyOutOfStock;
+    const selectionSummary = t('selectedOf', {
+        selected: selectedChildProductCount.toString(),
+        total: totalChildProducts.toString(),
+    });
+    const addToCartLabel = isProductASet ? t('addSetToCart') : t('addBundleToCart');
 
     if (!isProductASet && !isProductABundle) {
         return null;
     }
     return (
-        <div className="space-y-8">
+        <>
+            <div className="space-y-8 pb-24 md:pb-0">
             {/* Child Products Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {childProducts.map((childProduct: ShopperProducts.schemas['Product']) => (
@@ -298,28 +306,44 @@ export default function ChildProducts({
 
             {/* Add to Cart / Update Cart Button */}
             <div className="flex justify-center">
-                <Button
-                    data-testid="add-to-cart"
-                    onClick={() => void (mode === 'edit' ? handleUpdate() : handleAddToCart())}
-                    disabled={!canAddToCart || isAddingToOrUpdatingCart}
-                    size="lg"
-                    className="min-w-64">
-                    {isAddingToOrUpdatingCart
-                        ? mode === 'edit'
-                            ? t('updatingCart')
-                            : t('adding')
-                        : mode === 'edit'
-                          ? t('updateCart')
-                          : isProductASet
-                            ? t('addSetToCart')
-                            : t('addBundleToCart')}
-                </Button>
+                <div ref={atcAnchorRef}>
+                    <Button
+                        data-testid="add-to-cart"
+                        onClick={() => void (mode === 'edit' ? handleUpdate() : handleAddToCart())}
+                        disabled={!canAddToCart || isAddingToOrUpdatingCart}
+                        size="lg"
+                        className="min-w-64">
+                        {isAddingToOrUpdatingCart
+                            ? mode === 'edit'
+                                ? t('updatingCart')
+                                : t('adding')
+                            : mode === 'edit'
+                              ? t('updateCart')
+                              : isProductASet
+                                ? t('addSetToCart')
+                                : t('addBundleToCart')}
+                    </Button>
+                </div>
             </div>
 
             {/* Error Messages */}
             {!areAllChildProductsSelected && (
                 <div className="text-center text-destructive">{t('selectAllOptionsAbove')}</div>
             )}
-        </div>
+            </div>
+            {mode === 'add' && (
+                <StickyAddToCartBar
+                    atcAnchorRef={atcAnchorRef}
+                    productName={parentProduct.name ?? ''}
+                    summary={selectionSummary}
+                    canAddToCart={canAddToCart}
+                    isAdding={isAddingToOrUpdatingCart}
+                    onAddToCart={() => void handleAddToCart()}
+                    addToCartLabel={addToCartLabel}
+                    selectOptionsLabel={t('selectOptions')}
+                    addingLabel={t('adding')}
+                />
+            )}
+        </>
     );
 }

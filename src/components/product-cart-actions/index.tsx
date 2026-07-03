@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { type ReactElement, Suspense, lazy, startTransition, useState, useEffect } from 'react';
+import { type ReactElement, type RefObject, Suspense, lazy, startTransition, useState, useEffect } from 'react';
 import type { ShopperProducts } from '@/scapi';
 import { Button } from '@/components/ui/button';
 import { useProductView } from '@/providers/product-view';
@@ -47,6 +47,8 @@ interface ProductCartActionsProps {
      * Typically navigates to the PDP for the full purchase flow.
      */
     onBuyNow?: () => void;
+    /** Ref forwarded to a sentinel wrapping the native Add to Cart button for sticky bar visibility tracking. */
+    atcAnchorRef?: RefObject<HTMLDivElement | null>;
 }
 
 export default function ProductCartActions({
@@ -58,6 +60,7 @@ export default function ProductCartActions({
     onAddToWishlistSuccess,
     onAddToWishlistError,
     onBuyNow,
+    atcAnchorRef,
 }: ProductCartActionsProps): ReactElement {
     const { t } = useTranslation('product');
     const isProductASet = isProductSet(product);
@@ -171,14 +174,16 @@ export default function ProductCartActions({
 
                 {/* Standard layout: single Add to Cart / Update button */}
                 {!isCompactAddMode && !isProductASet && !isProductABundle && (
-                    <Button
-                        data-testid="add-to-cart"
-                        onClick={() => void onAddOrUpdateToCart()}
-                        disabled={!canAddToCart || isAddingToOrUpdatingCart}
-                        className="w-full text-base font-semibold leading-6"
-                        size="lg">
-                        {isEditMode ? t('updateCart') : isAddingToOrUpdatingCart ? t('addingToCart') : t('addToCart')}
-                    </Button>
+                    <div ref={atcAnchorRef} className="w-full">
+                        <Button
+                            data-testid="add-to-cart"
+                            onClick={() => void onAddOrUpdateToCart()}
+                            disabled={!canAddToCart || isAddingToOrUpdatingCart}
+                            className="w-full text-base font-semibold leading-6"
+                            size="lg">
+                            {isEditMode ? t('updateCart') : isAddingToOrUpdatingCart ? t('addingToCart') : t('addToCart')}
+                        </Button>
+                    </div>
                 )}
 
                 {/* Express Payments — standard layout only, vertical for PDP */}

@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { type ReactElement } from 'react';
+import { type ReactElement, useMemo, useRef } from 'react';
 import type { ShopperProducts } from '@/scapi';
 import ImageGallery from '@/components/image-gallery';
 import ProductInfo from './product-info';
 import ProductCartActions from '@/components/product-cart-actions';
-import ProductViewProvider from '@/providers/product-view';
+import StickyAddToCartBar from '@/components/sticky-add-to-cart-bar';
+import ProductViewProvider, { useProductView } from '@/providers/product-view';
 import { useProductImages } from '@/hooks/product/use-product-images';
 import { useSelectedVariations } from '@/hooks/product/use-selected-variations';
+import { useVariationAttributes } from '@/hooks/product/use-variation-attributes';
+import { buildVariantSummary } from '@/lib/product/build-variant-summary';
 import { isProductSet, isProductBundle } from '@/lib/product/product-utils';
 import CollapsibleHtmlSection from '@/components/collapsible-section/collapsible-html-section';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +32,81 @@ import { UITarget } from '@/targets/ui-target';
 interface ProductViewProps {
     product: ShopperProducts.schemas['Product'];
     mode?: 'add' | 'edit';
+}
+
+interface ProductViewContentProps {
+    product: ShopperProducts.schemas['Product'];
+    galleryImages: ReturnType<typeof useProductImages>['galleryImages'];
+    isProductASet: boolean;
+    isProductABundle: boolean;
+}
+
+function ProductViewContent({
+    product,
+    galleryImages,
+    isProductASet,
+    isProductABundle,
+}: ProductViewContentProps): ReactElement {
+    const { t } = useTranslation('product');
+    const atcAnchorRef = useRef<HTMLDivElement>(null);
+    const { canAddToCart, isAddingToOrUpdatingCart, handleAddToCart } = useProductView();
+    const variationAttributes = useVariationAttributes({ product });
+    const variantSummary = useMemo(() => buildVariantSummary(variationAttributes), [variationAttributes]);
+    const showStickyBar = !isProductASet && !isProductABundle;
+
+    return (
+        <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 pb-24 md:pb-0">
+                {/* Left Column - Image Gallery + Description */}
+                <div className="order-1">
+                    <ImageGallery
+                        key={product.id}
+                        images={galleryImages}
+                        eager={!isProductASet && !isProductABundle}
+                        showNavigationArrows
+                        navigationArrowSize="lg"
+                        productName={product.name}
+                        enableImageZoom
+                    />
+                    <UITarget targetId="sfcc.pdp.agent.productHelper" />
+                    {product.longDescription && product.longDescription !== product.shortDescription && (
+                        <CollapsibleHtmlSection
+                            label={`${t('description')}:`}
+                            content={product.longDescription}
+                            contentType="bulleted-list"
+                            defaultOpen
+                            className="mt-6"
+                        />
+                    )}
+                </div>
+
+                {/* Right Column - Product Info */}
+                <div className="order-2">
+                    <ProductInfo product={product} />
+                    <ProductCartActions product={product} atcAnchorRef={atcAnchorRef} />
+                    <UITarget targetId="sfcc.pdp.returnsWarranty" />
+                    {/* @sfdc-extension-block-start SFDC_EXT_SHIPPING_DELIVERY */}
+                    <UITarget targetId="sfcc.pdp.estimatedDelivery" />
+                    {/* @sfdc-extension-block-end SFDC_EXT_SHIPPING_DELIVERY */}
+                    <UITarget targetId="sfcc.pdp.faq" />
+                    <UITarget targetId="sfcc.pdp.collapsibles" />
+                </div>
+            </div>
+            {showStickyBar && (
+                <StickyAddToCartBar
+                    atcAnchorRef={atcAnchorRef}
+                    productName={product.name ?? ''}
+                    summary={variantSummary}
+                    canAddToCart={canAddToCart}
+                    isAdding={isAddingToOrUpdatingCart}
+                    onAddToCart={() => void handleAddToCart()}
+                    addToCartLabel={t('addToCart')}
+                    selectOptionsLabel={t('selectOptions')}
+                    addingLabel={t('addingToCart')}
+                />
+            )}
+        </>
+    );
 }
 
 /**
@@ -57,46 +135,14 @@ export default function ProductView({ product }: ProductViewProps): ReactElement
         selectedAttributes,
     });
 
-    const { t } = useTranslation('product');
-
     return (
         <ProductViewProvider product={product} mode="add">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12">
-                {/* Left Column - Image Gallery + Description */}
-                <div className="order-1">
-                    <ImageGallery
-                        key={product.id}
-                        images={galleryImages}
-                        eager={!isProductASet && !isProductABundle}
-                        showNavigationArrows
-                        navigationArrowSize="lg"
-                        productName={product.name}
-                        enableImageZoom
-                    />
-                    <UITarget targetId="sfcc.pdp.agent.productHelper" />
-                    {product.longDescription && product.longDescription !== product.shortDescription && (
-                        <CollapsibleHtmlSection
-                            label={`${t('description')}:`}
-                            content={product.longDescription}
-                            contentType="bulleted-list"
-                            defaultOpen
-                            className="mt-6"
-                        />
-                    )}
-                </div>
-
-                {/* Right Column - Product Info */}
-                <div className="order-2">
-                    <ProductInfo product={product} />
-                    <ProductCartActions product={product} />
-                    <UITarget targetId="sfcc.pdp.returnsWarranty" />
-                    {/* @sfdc-extension-block-start SFDC_EXT_SHIPPING_DELIVERY */}
-                    <UITarget targetId="sfcc.pdp.estimatedDelivery" />
-                    {/* @sfdc-extension-block-end SFDC_EXT_SHIPPING_DELIVERY */}
-                    <UITarget targetId="sfcc.pdp.faq" />
-                    <UITarget targetId="sfcc.pdp.collapsibles" />
-                </div>
-            </div>
+            <ProductViewContent
+                product={product}
+                galleryImages={galleryImages}
+                isProductASet={isProductASet}
+                isProductABundle={isProductABundle}
+            />
         </ProductViewProvider>
     );
 }

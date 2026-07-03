@@ -15,7 +15,7 @@
  */
 
 // Testing libraries
-import { type ComponentProps } from 'react';
+import { type ComponentProps, createRef } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
@@ -164,6 +164,14 @@ describe('ProductCartActions', () => {
 
             // User should see a button to add the product to cart
             expect(screen.getByRole('button', { name: /add to cart/i })).toBeInTheDocument();
+        });
+
+        test('forwards atcAnchorRef to the native add to cart sentinel', () => {
+            const atcAnchorRef = createRef<HTMLDivElement>();
+            renderProductCartActions({ product: standardProd, atcAnchorRef });
+
+            expect(atcAnchorRef.current).toBeTruthy();
+            expect(atcAnchorRef.current?.querySelector('[data-testid="add-to-cart"]')).toBeInTheDocument();
         });
 
         test('add to cart button is disabled on out of stock item', () => {
